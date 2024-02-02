@@ -1,0 +1,20 @@
+{
+    "name": "manne65hd/f3-usergroupnavbar",
+    "description": "User-Authentication with Groups and a Navbar for the PHP FatFreeFramework",
+    "type": "library",
+    "require": {
+        "bcosca/fatfree-core": "^3.8",
+        "directorytree/ldaprecord": "^3.0"
+    },
+    "license": "GPL-3.0",
+    "autoload": {
+        "classmap" : [ "helpers", "models" ]
+      },
+    "authors": [
+        {
+            "name": "Manfred Hoffmann",
+            "email": "oss@manne65-hd.de"
+        }
+    ],
+    "minimum-stability": "dev"
+}
