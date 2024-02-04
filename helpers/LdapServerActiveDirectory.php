@@ -21,7 +21,7 @@
  * @copyright 2024 Manfred Hoffmann
  * @author Manfred Hoffmann <oss@manne65-hd.de>
  * @license GPLv3
- * @version 0.1.0-BETA 
+ * @version 0.2.0-BETA 
  * @link https://github.com/manne65-hd/F3-UserGroupNavbar
  * 
  **/
@@ -57,6 +57,12 @@ final class LdapServerActiveDirectory extends LdapServer {
 
             // get ALL groups
             $all_groups = $user->groups()->get();
+            /*
+            echo '<pre>';
+            print_r($all_groups);
+            echo '</pre>';
+            exit;
+            */
             // Array to hold the relevant group-memberships of the user based on $f3->get('ldap.groups_base_dn')
             $base_groups = []; 
 
@@ -67,6 +73,7 @@ final class LdapServerActiveDirectory extends LdapServer {
                         'name'  => $group->getName(),
                         'dn'    => $group->getDn(),
                         'guid'  => $group->getConvertedGuid(),
+                        'description' => $group->getFirstAttribute('Description'),
                     );
                 }
             }

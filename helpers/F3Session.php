@@ -21,7 +21,7 @@
  * @copyright 2024 Manfred Hoffmann
  * @author Manfred Hoffmann <oss@manne65-hd.de>
  * @license GPLv3
- * @version 0.1.0-BETA 
+ * @version 0.2.0-BETA 
  * @link https://github.com/manne65-hd/F3-UserGroupNavbar
  * 
  **/
@@ -32,7 +32,7 @@ use Session;
 
 class F3Session extends \Prefab {
     /** @var string Contains the current version tag of the F3-UserGroupNavbar-package */
-    const VERSION='0.1.0-BETA';
+    const VERSION='0.2.0-BETA';
 
     /** @var object The FatFreeFramework-Object required to use F3-functions inside this class */
     protected $f3;
@@ -46,7 +46,16 @@ class F3Session extends \Prefab {
         if (!$this->f3->get('SESSION.userid')) {
             $this->f3->set('SESSION.userid', 0);
             $this->f3->clear('SESSION.username');
+            $this->f3->clear('SESSION.auth_type');
+            $this->f3->clear('SESSION.groups');
           }
+    }
+
+    public function logout() {
+        $this->f3->set('SESSION.userid', 0);
+        $this->f3->clear('SESSION.username');
+        $this->f3->clear('SESSION.auth_type');
+        $this->f3->clear('SESSION.groups');
     }
 
     /**
