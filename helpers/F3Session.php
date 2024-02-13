@@ -43,19 +43,19 @@ class F3Session extends \Prefab {
     }
 
     public function start() {
-        if (!$this->f3->get('SESSION.userid')) {
-            $this->f3->set('SESSION.userid', 0);
-            $this->f3->clear('SESSION.username');
-            $this->f3->clear('SESSION.auth_type');
-            $this->f3->clear('SESSION.groups');
+        if (!$this->f3->get('SESSION.user.id')) {
+            $this->f3->set('SESSION.user.id', 0);
+            $this->f3->clear('SESSION.user.username');
+            $this->f3->clear('SESSION.user.auth_type');
+            $this->f3->clear('SESSION.user.groups');
           }
     }
 
     public function logout() {
-        $this->f3->set('SESSION.userid', 0);
-        $this->f3->clear('SESSION.username');
-        $this->f3->clear('SESSION.auth_type');
-        $this->f3->clear('SESSION.groups');
+        $this->f3->set('SESSION.user.id', 0);
+        $this->f3->clear('SESSION.user.username');
+        $this->f3->clear('SESSION.user.auth_type');
+        $this->f3->clear('SESSION.user.groups');
     }
 
     /**
