@@ -45,6 +45,13 @@ class F3Group extends \DB\SQL\Mapper{
     /** @var object The LDAP-connection-object */
     protected $ldapServer; 
 
+    /** @var array An array for the group_type_icons */
+    protected $group_icons = [
+        1 => 'fa-solid fa-database',
+        2 => 'fa-solid fa-network-wired'
+    ];
+    
+
 	public function __construct($app_db_instance_name = 'DB') {
 		parent::__construct( \Base::instance()->get($app_db_instance_name), 'ug__groups' );
         $this->f3 = \Base::instance();
@@ -56,25 +63,19 @@ class F3Group extends \DB\SQL\Mapper{
      * Returns all groups  ...
      *
      * @param array $filter   
-     * @return array    a associative array of the groups matching optional $filter
+     * @return array an associative array of the groups matching optional $filter
      */
     public function getGroupList(array $filter = []) :array {
         $sql = 'SELECT * FROM ug__groups';
         $group_list = $this->appDB->exec($sql);
-        /* let's add some sugar to the array:
-            - add icon for AUTH_type 
-            - remove pw_hash ... although pw_hashes can hardly ever be decrypted
-        foreach ($user_list as $key => $value){
-            unset($user_list[$key]['pw_hash']);
-            if ($value['auth_type'] === self::AUTH_TYPE_LOCAL) {
-                $user_list[$key]['auth_icon'] = self::ICON_AUTH_LOCAL;
-            } elseif ($value['auth_type'] === self::AUTH_TYPE_BOT) {
-                $user_list[$key]['auth_icon'] = self::ICON_AUTH_BOT;
-            } else {
-                $user_list[$key]['auth_icon'] = self::ICON_AUTH_LDAP;
-            }
-        }
+        /*let's add some sugar to the array:
+            - add icon for GROUP_type 
+            - Convert LineBreaks to <br> for description
         */
+        foreach ($group_list as $key => $value){
+            $group_list[$key]['group_icon'] = $this->group_icons[$value['group_type']];
+            $group_list[$key]['description'] = nl2br($value['description']);
+        }
         return $group_list;
     }
 
