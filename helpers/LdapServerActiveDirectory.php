@@ -28,44 +28,42 @@
 
 namespace manne65hd;
 
-/*
-use LdapRecord\Container;
-use LdapRecord\Connection;
-use LdapRecord\Models\ActiveDirectory\User;
-use LdapRecord\Models\ActiveDirectory\Group;
-*/
-
 final class LdapServerActiveDirectory extends LdapServer {
 
+    /** @var object The FatFreeFramework-Object required to use F3-functions inside this class */
+    protected $f3;
 
-    public function ldapGetUserInfo($username) {
-        $f3 = \Base::instance();
+    /** @var object The "pure" SQL-object, required for some special queries NOT suitable for use with the mapper*/
+    protected $appDB;
 
-        $user = $this->ldap_user::findByAnr($username);
+    public function getUserDataByName($username) {
+        $this->currentLdapUser = $this->ldapUser::findByAnr($username);
+        if ($this->currentLdapUser) {
+            return $this->getUserDataAsArray($this->currentLdapUser);
+        } else {
+            return false;
+        }
+    }
 
-        if ($user) {
-            $user_info = array(
-                'distinguishedname' => $user->getDn(),
-                'guid' => $user->getConvertedGuid(),
-                'recently_renamed' => $user['wasRecentlyRenamed'],
-                'username'  => $user->getFirstAttribute('samaccountname'),
-                'firstname'  => $user->getFirstAttribute('givenname'),
-                'lastname'  => $user->getFirstAttribute('sn'),
-                'displayname'  => $user->getFirstAttribute('displayname'),
-                'email'  => $user->getFirstAttribute('mail'),
-            );
+    public function getUserDataByGuid($guid) {
+        $this->currentLdapUser = $this->ldapUser::findByGuid($guid);
+        if ($this->currentLdapUser) {
+            return $this->getUserDataAsArray($this->currentLdapUser);
+        } else {
+            return false;
+        }
+    }
 
+    public function getUserGroupsByGuid($guid) {
+        $f3 = \Base::instance(); // ToDo ... make this a class-property and assign on __construct()
+
+        $this->currentLdapUser = $this->ldapUser::findByGuid($guid);
+        if ($this->currentLdapUser) {
             // get ALL groups
-            $all_groups = $user->groups()->get();
-            /*
-            echo '<pre>';
-            print_r($all_groups);
-            echo '</pre>';
-            exit;
-            */
+            $all_groups = $this->currentLdapUser->groups()->get();
             // Array to hold the relevant group-memberships of the user based on $f3->get('ldap.groups_base_dn')
             $base_groups = []; 
-
+            // let's iterate all groups ...
             foreach ($all_groups as $group) {
                 // check if current group is INSIDE the relevant groups
                 if (str_contains(mb_strtolower($group->getDn()), mb_strtolower($f3->get('ldap.groups_base_dn')))) {
@@ -77,14 +75,23 @@ final class LdapServerActiveDirectory extends LdapServer {
                     );
                 }
             }
-
-            return array(
-                'user' => $user_info,
-                'groups' => $base_groups,
-            );
+            return $base_groups;            
         } else {
             return false;
         }
+    }
+
+    protected function getUserDataAsArray($userObject) {
+        return array(
+            'distinguishedname' => $userObject->getDn(),
+            'guid' => $userObject->getConvertedGuid(),
+            'recently_renamed' => $userObject['wasRecentlyRenamed'],
+            'username'  => $userObject->getFirstAttribute('samaccountname'),
+            'firstname'  => $userObject->getFirstAttribute('givenname'),
+            'lastname'  => $userObject->getFirstAttribute('sn'),
+            'displayname'  => $userObject->getFirstAttribute('displayname'),
+            'email'  => $userObject->getFirstAttribute('mail'),
+        );
     }
 
 

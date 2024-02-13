@@ -67,6 +67,10 @@ public function __construct(){
         return $this->ldapServer->auth()->attempt($distinguishedname, $password);
     }
 
-    abstract public function ldapGetUserInfo($username);
+    abstract public function getUserDataByName($username);
+    abstract public function getUserDataByGuid($guid);
+    abstract public function getUserGroupsByGuid($guid);
+    abstract protected function getUserDataAsArray($userObject);
+
 
 }
