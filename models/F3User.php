@@ -91,12 +91,6 @@ class F3User extends \DB\SQL\Mapper{
      * @return array    a associative array of the users matching optional $filter
      */
     public function getUserList(array $filter = []) :array {
-        /*
-        [user_search] => hotte
-        [chkbox_showLocalUsers] => checked
-        [chkbox_showBotUsers] => 
-        [chkbox_showLdapUsers] => checked
-        */
         $sql_filter = '1';
         if ($filter['select_filterActiveOnly'] == 'selected') {
             $sql_filter = '`is_active` = 1 AND `is_deleted` = 0'; 
