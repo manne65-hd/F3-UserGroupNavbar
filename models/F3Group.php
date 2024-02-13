@@ -74,7 +74,7 @@ class F3Group extends \DB\SQL\Mapper{
         */
         foreach ($group_list as $key => $value){
             $group_list[$key]['group_icon'] = $this->group_icons[$value['group_type']];
-            $group_list[$key]['description'] = nl2br($value['description']);
+            $group_list[$key]['description'] = (!empty($group_list[$key]['description'])) ? nl2br($value['description']) : '';
         }
         return $group_list;
     }
