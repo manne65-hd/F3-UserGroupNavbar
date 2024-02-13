@@ -39,30 +39,32 @@ abstract class LdapServer {
     const TYPE_FREE_IPA = 'FreeIPA';
     const TYPE_OTHER = 'Other';
 
-    protected $ldap_server; // The LDAP-connection-object
+    protected $ldapServer; // The LDAP-connection-object
     protected $ldap_groups_base; // connect to
-    protected $ldap_user; // The LDAP-user-object
-    protected $ldap_group; // The LDAP-group-object
+    protected $ldapUser; // The general LDAP-user-object required to use methods for searching, etc.
+    protected $ldapGroup; // The general LDAP-group-object required to use methods for searching, etc.
+    protected $currentLdapUser; // An object for a single concrete user
+    protected $currentLdapGroup; // An object for a single concrete group
 
 
 public function __construct(){
     $f3 = \Base::instance();
-    $this->ldap_server =  new Connection([
+    $this->ldapServer =  new Connection([
         'hosts' => $f3->get('ldap.hosts'),
         'base_dn' => $f3->get('ldap.users_base_dn'),
         'username' => $f3->get('ldap.qry_username'),
         'password' => $f3->get('ldap.qry_password'),
       ]);
 
-    Container::addConnection($this->ldap_server);
-    $this->ldap_user  = new \LdapRecord\Models\ActiveDirectory\User();
-    $this->ldap_group = new \LdapRecord\Models\ActiveDirectory\Group();
+    Container::addConnection($this->ldapServer);
+    $this->ldapUser  = new \LdapRecord\Models\ActiveDirectory\User();
+    $this->ldapGroup = new \LdapRecord\Models\ActiveDirectory\Group();
 
-    return $this->ldap_server;
+    return $this->ldapServer;
 }
 
     public function ldapAuth($distinguishedname, $password) {
-        return $this->ldap_server->auth()->attempt($distinguishedname, $password);
+        return $this->ldapServer->auth()->attempt($distinguishedname, $password);
     }
 
     abstract public function ldapGetUserInfo($username);
