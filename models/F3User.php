@@ -124,7 +124,6 @@ class F3User extends \DB\SQL\Mapper{
         }
 
         $sql = "SELECT * FROM ug__users WHERE $sql_filter";
-        echo '<h4>$sql-Query = ' . $sql . '</h4>';
         $user_list = $this->appDB->exec($sql);
         /* let's add some sugar to the array:
             - add icon for AUTH_type 
