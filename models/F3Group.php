@@ -46,12 +46,91 @@ class F3Group extends \DB\SQL\Mapper{
     protected $ldapServer; 
 
 	public function __construct($app_db_instance_name = 'DB') {
-		parent::__construct( \Base::instance()->get($app_db_instance_name), 'groups' );
+		parent::__construct( \Base::instance()->get($app_db_instance_name), 'ug__groups' );
         $this->f3 = \Base::instance();
         $this->appDB = $this->f3->get($app_db_instance_name);
 	}
+
     
-    public function syncLDAPGroups($groups) {
+        /**
+     * Returns all groups  ...
+     *
+     * @param array $filter   
+     * @return array    a associative array of the groups matching optional $filter
+     */
+    public function getGroupList(array $filter = []) :array {
+        $sql = 'SELECT * FROM ug__groups';
+        $group_list = $this->appDB->exec($sql);
+        /* let's add some sugar to the array:
+            - add icon for AUTH_type 
+            - remove pw_hash ... although pw_hashes can hardly ever be decrypted
+        foreach ($user_list as $key => $value){
+            unset($user_list[$key]['pw_hash']);
+            if ($value['auth_type'] === self::AUTH_TYPE_LOCAL) {
+                $user_list[$key]['auth_icon'] = self::ICON_AUTH_LOCAL;
+            } elseif ($value['auth_type'] === self::AUTH_TYPE_BOT) {
+                $user_list[$key]['auth_icon'] = self::ICON_AUTH_BOT;
+            } else {
+                $user_list[$key]['auth_icon'] = self::ICON_AUTH_LDAP;
+            }
+        }
+        */
+        return $group_list;
+    }
+
+    /**
+     * Returns the user's local group-memberships
+     *
+     * @param integer   $user_id    The id of the user
+     * @return array    a flat array with the local group-IDs, that the user is a member of
+     */
+    public function getUsersGroupIDs(int $user_id) :array {
+        $sql = 'SELECT group_id FROM ug__group_has_users WHERE user_id=?';
+        $users_groups = array_column($this->appDB->exec($sql, $user_id), 'group_id');
+        if ($users_groups) {
+            return $users_groups;
+        } else {
+            return [];
+        }
+    }
+
+    /**
+     * Returns the user's local group-memberships with id, name, type and description
+     *
+     * @param integer   $user_id    The id of the user
+     * @return array    a flat array with the local group-IDs, that the user is a member of
+     */
+    public function getUsersGroupMemberships(int $user_id) :array {
+        $sql = 'SELECT u.group_id AS id, g.group_type, g.groupname, g.description 
+                    FROM ug__group_has_users AS u 
+                    LEFT JOIN ug__groups AS g ON u.group_id = g.id 
+                        WHERE u.user_id = ?';
+        return $this->appDB->exec($sql, $user_id);
+    }
+
+    /**
+     * Returns all member-users of a given group with id, name, type and description
+     *
+     * @param integer   $group_id    The id of the group
+     * @return array    a flat array with the local group-IDs, that the user is a member of
+     */
+    public function getGroupMembers(int $group_id) :array {
+        $sql = 'SELECT ug.user_id AS id, u.auth_type, u.username 
+                    FROM ug__group_has_users AS ug 
+                    LEFT JOIN ug__users AS u ON ug.user_id = u.id 
+                        WHERE ug.group_id = ?';
+        return $this->appDB->exec($sql, 1);
+    }
+
+    /**
+     * Sync local groups with group-information from LDAP
+     *
+     * @param array $groups An associative array of LDAP-group-information with the following keys:'name', 'dn', 'guid', 'description'
+     *              HINT: dn = DistinguishedName
+
+     * @return array a flat array with the local group-IDs, that the user is a member of
+     */
+    public function syncLDAPGroups(array $groups) :array {
         $users_local_groups = [];
         foreach ($groups as $group) {
             if ($this->load(['ldap_unique_id = ?', $group['guid']])) {
@@ -85,10 +164,6 @@ class F3Group extends \DB\SQL\Mapper{
             }
         }
         return $users_local_groups;
-    }
-
-    protected function AddGroups2UserSession(int $user_id) :void {
-        // $this->f3->set('SESSION.groups', $groups);
     }
 
 }

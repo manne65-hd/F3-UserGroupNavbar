@@ -39,7 +39,7 @@ class F3UserGroup extends \DB\SQL\Mapper{
     protected $appDB;
 
     public function __construct($app_db_instance_name = 'DB') {
-        parent::__construct( \Base::instance()->get($app_db_instance_name), 'users_groups' );
+        parent::__construct( \Base::instance()->get($app_db_instance_name), 'ug__group_has_users' );
         $this->f3 = \Base::instance();
         $this->appDB = $this->f3->get($app_db_instance_name);
     }
@@ -49,13 +49,13 @@ class F3UserGroup extends \DB\SQL\Mapper{
     }
 
     public function syncLocalGroupsOfUser($user_id, $group_ids) {
-        \Flash::instance()->addMessage('Syncing Group-IDs: ' . implode(',', $group_ids), 'info');
+        // \Flash::instance()->addMessage('Syncing Group-IDs: ' . implode(',', $group_ids), 'info');
 
         // first we'll remove the user from local groups he no longer belongs to
         $this->removeUserFromStaleLDAPGroups($user_id, $group_ids);
         foreach ($group_ids as $group_id) {
             if (!$this->userIsMemberOfGroup($user_id, $group_id)) {
-                \Flash::instance()->addMessage('Adding user to Group-ID: ' . $group_id, 'success');
+                // \Flash::instance()->addMessage('Adding user to Group-ID: ' . $group_id, 'success');
                 $this->user_id = $user_id;
                 $this->group_id = $group_id;
                 $this->group_type = \manne65hd\F3Group::GROUP_TYPE_LDAP;
@@ -80,14 +80,15 @@ class F3UserGroup extends \DB\SQL\Mapper{
         $active_group_ids_list  = implode(',', $active_group_ids);
         $group_type_ldap        = \manne65hd\F3Group::GROUP_TYPE_LDAP;
 
-        $sql = "DELETE FROM users_groups  
+        $sql = "DELETE FROM ug__group_has_users  
                         WHERE   user_id     = $user_id  
                             AND group_type  = $group_type_ldap
                             AND group_id    NOT IN ($active_group_ids_list)";
 
+        // \Flash::instance()->addMessage('SQL for PURGING : ' . $sql , 'info');
         $this->appDB->exec($sql);
         $purged_groups = $this->appDB->count();
-        \Flash::instance()->addMessage('Purged user from  ' . $purged_groups . ' groups!', 'info');
+        // \Flash::instance()->addMessage('Purged user from  ' . $purged_groups . ' groups!', 'info');
     }
 
 
