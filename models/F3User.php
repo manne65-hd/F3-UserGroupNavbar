@@ -21,7 +21,7 @@
  * @copyright 2024 Manfred Hoffmann
  * @author Manfred Hoffmann <oss@manne65-hd.de>
  * @license GPLv3
- * @version 0.2.0-BETA 
+ * @version 0.3.0-BETA 
  * @link https://github.com/manne65-hd/F3-UserGroupNavbar
  * 
  **/
@@ -37,7 +37,7 @@ class F3User extends \DB\SQL\Mapper{
 
        
     /** @var string Contains the current version tag of the F3-UserGroupNavbar-package */
-    const VERSION='0.2.0-BETA';
+    const VERSION='0.3.0-BETA';
 
     /** @var object The FatFreeFramework-Object required to use F3-functions inside this class */
     protected $f3;
