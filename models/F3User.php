@@ -64,20 +64,8 @@ class F3User extends \DB\SQL\Mapper{
         3 => 'fa-solid fa-network-wired'
     ];
 
-    protected $state_active = [
-        0 => 'fa-solid fa-toggle-off',
-        1 => 'fa-solid fa-toggle-on',
-    ];
-
-    protected $state_deleted = [
-        0 => '',
-        1 => 'fa-regular fa-trash-can'
-    ];
-
     /** @var string The default format for return date&time */
     protected $datetime_format = 'd.m.y H:i:s';
-
-
 
 	public function __construct($app_db_instance_name = 'DB') {
 		parent::__construct( \Base::instance()->get($app_db_instance_name), 'ug__users' );
@@ -103,7 +91,46 @@ class F3User extends \DB\SQL\Mapper{
      * @return array    a associative array of the users matching optional $filter
      */
     public function getUserList(array $filter = []) :array {
-        $sql = 'SELECT * FROM ug__users WHERE 1';
+        /*
+        [user_search] => hotte
+        [chkbox_showLocalUsers] => checked
+        [chkbox_showBotUsers] => 
+        [chkbox_showLdapUsers] => checked
+        */
+        $sql_filter = '1';
+        if ($filter['select_filterActiveOnly'] == 'selected') {
+            $sql_filter = '`is_active` = 1 AND `is_deleted` = 0'; 
+        } elseif ($filter['select_filterInactiveOnly'] == 'selected') {
+            $sql_filter = '`is_active` = 0'; 
+        } elseif ($filter['select_filterDeletedOnly'] == 'selected') {
+            $sql_filter = '`is_deleted` = 1'; 
+        }
+
+        $filter_auth_type = array();
+        if ($filter['chkbox_showLocalUsers'] == 'checked') {
+            $filter_auth_type[] = 1;
+        }
+        if ($filter['chkbox_showBotUsers'] == 'checked') {
+            $filter_auth_type[] = 2;
+        }
+        if ($filter['chkbox_showLdapUsers'] == 'checked') {
+            $filter_auth_type[] = 3;
+        }
+        if (count($filter_auth_type)) {
+            $sql_auth_type_in = implode(',', $filter_auth_type);
+            $sql_filter.= " AND `auth_type` IN ($sql_auth_type_in)";
+        } else {
+            $sql_filter.= " AND `auth_type` = 0";
+        }
+
+
+        if ($filter['user_search']) {
+            $user_search = $filter['user_search'];
+            $sql_filter.= " AND (`username` LIKE '%$user_search%' OR `firstname` LIKE '%$user_search%' OR `lastname` LIKE '%$user_search%' OR `shortname` LIKE '%$user_search%' OR `nickname` LIKE '%$user_search%')";
+        }
+
+        $sql = "SELECT * FROM ug__users WHERE $sql_filter";
+        echo '<h4>$sql-Query = ' . $sql . '</h4>';
         $user_list = $this->appDB->exec($sql);
         /* let's add some sugar to the array:
             - add icon for AUTH_type 
